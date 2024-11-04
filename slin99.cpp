@@ -74,26 +74,47 @@ struct Node {
 };
 
 int DirectAddressSearch(const list<Node>& T, int k) {
-    auto it = find(T.begin() ,T.end(), k); //grabs an iterator that serves as a generalized pointer-like object providing a way to access and traverse elements in a container
-    //without needing to know the details of the contain's structure
-    int position = distance(T.begin(), it);
-    return position;
+    auto it = find_if(T.begin() ,T.end(), [k](const Node& node) { return node.key == k; }); //grabs an iterator that serves as a generalized pointer-like object providing a way to access and traverse elements in a container
+    //without needing to know the details of the contain's structure. We need a custom predicate (or lambda) to find based on key
+    if (it != T.end()) {
+        return distance(T.begin(), it);
+        //int position = distance(T.begin(), it);
+    }
+    return -1;  //The key is not found
 }
 
 void DirectAddressInsert(list<Node>& T, Node& x) {
-    auto it = find(T.begin(), T.end(), x.key);
-    T.insert(it, x);
+    auto it = find_if(T.begin(), T.end(), [&x](const Node& node) { return node.key == x.key; });
+    if (it == T.end()) {
+        T.push_back(x); 
+    }
+    else {
+        it->data = x.data;
+    }
 }
 
-void DirectAddressDelete(list<Node>& T, Node& x) {
-    auto it = find(T.begin(), T.end(), x.key);
-    remove(T.begin(), T.end(), x.data);
+void DirectAddressDelete(list<Node>& T, int key) {
+    T.remove_if([key](const Node& node) { return node.key == key; });
 }
 
 int main(int argc, char* argv[]) {
     int m; //the size of the chained hash table
     cin >> m;
+    //create hashtable
     //hash function h(k) = k mod m
+    for (int i = 0; i < m; i++) {
+
+    }
+
+    string input;
+    cin >> input;
+
+    char letter = input[0];
+    while (letter != 'e') {    //e = exit, finish your program
+        if (letter == 'i') {     //insert key into the table, "i2" implies Insert key2
+            int element = input[1, length()]
+        }
+    }
 }
 
 
