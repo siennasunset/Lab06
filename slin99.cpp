@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <vector>
 #include <algorithm>
 using namespace std; //to silence namespace std
 
@@ -70,7 +71,25 @@ Chaining: a way to handle collisions in which more than one key maps to the same
 
 struct Node {
     int key;
-    int data;
+};
+
+int hashFunction(int k, int m) {
+    return k % m; //hash function h(k) = k mod m
+}
+
+class HashTable {
+    vector<list<Node>> table;
+    int m;
+
+public:
+    HashTable(int size) : m(size) {
+        table.resize(m);
+    }
+    void insert(int k) {
+        int index = hashFunction(k, m);
+        Node x = {k};
+        DirectAddressInsert(table[index], x);
+    }
 };
 
 int DirectAddressSearch(const list<Node>& T, int k) {
@@ -89,11 +108,12 @@ void DirectAddressInsert(list<Node>& T, Node& x) {
         T.push_back(x); 
     }
     else {
-        it->data = x.data;
+        it->key = x.key;
     }
 }
 
 void DirectAddressDelete(list<Node>& T, int key) {
+    auto initialSize = T.size();
     T.remove_if([key](const Node& node) { return node.key == key; });
 }
 
@@ -102,19 +122,55 @@ int main(int argc, char* argv[]) {
     cin >> m;
     //create hashtable
     //hash function h(k) = k mod m
+    list<Node> T;
     for (int i = 0; i < m; i++) {
 
     }
 
     string input;
-    cin >> input;
+    while (cin >> input && input[0] != 'e') {    //e = exit, finish your program
+        char letter = input[0];
+        int key = stoi(input.substr(1));
 
-    char letter = input[0];
-    while (letter != 'e') {    //e = exit, finish your program
-        if (letter == 'i') {     //insert key into the table, "i2" implies Insert key2
-            int element = input[1, length()]
+        if (letter == 'i') {     //insert key into the table, "i2" implies Insert key 2
+            //For collisions, insert the colliding key at the beginning of the linked list. 
+            //Insert the key and don't output anything. 
+            Node newNode{key, };
+            DirectAddressInsert(T, newNode);
+        }
+        else if (letter == 'd') {    //delete key from the table. "d2" implies Delete key 2 from the table
+            //If there are multiple elements of the same key value, delete the element of the key value that 
+            //appears the earliest in the list. If the delete was successful, you have to output
+            DirectAddressDelete(T, key);
+            auto initialSize = T.size();
+            if (T.size() == initialSize) {
+                cout << key << " :DELETE_FAILED;" << endl;
+            }
+            else {
+                cout << key << " :DELTEED;" << endl;
+            }
+        }
+        else if (letter = 's') { //Search (key) in the table. 
+            int index = DirectAddressSearch(T, key);
+            if (index != -1) {
+                cout << "(" << key << ") :FOUND_ATi, j;" << endl;
+            }
+            else {
+                cout << "(" << key << ") :NOT_FOUND;" << endl;
+            }
+        }
+        else if (letter = 'o') { //Output the entire hash table, 
+        //0:6->3->;
+        //1:1->;
+        //2:;
+        int bucketIndex = 0;
+        for (const auto& node : T) {
+            cout << bucketIndex << ": " << node.key << "->" << node.data << ";" << endl;
+            ++bucketIndex;
+        }
         }
     }
+    return 0;
 }
 
 
