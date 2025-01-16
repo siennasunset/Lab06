@@ -2,6 +2,7 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <string>
 using namespace std; //to silence namespace std
 
 
@@ -77,6 +78,8 @@ int hashFunction(int k, int m) {
     return k % m; //hash function h(k) = k mod m
 }
 
+void DirectAddressInsert(list<Node>& T, Node& x); //used in HashTable class
+
 class HashTable {
     vector<list<Node>> table;
     int m;
@@ -93,7 +96,7 @@ public:
 };
 
 int DirectAddressSearch(const list<Node>& T, int k) {
-    auto it = find_if(T.begin() ,T.end(), [k](const Node& node) { return node.key == k; }); //grabs an iterator that serves as a generalized pointer-like object providing a way to access and traverse elements in a container
+    auto it = find_if(T.begin(), T.end(), [k](const Node& node) { return node.key == k; }); //grabs an iterator that serves as a generalized pointer-like object providing a way to access and traverse elements in a container
     //without needing to know the details of the contain's structure. We need a custom predicate (or lambda) to find based on key
     if (it != T.end()) {
         return distance(T.begin(), it);
@@ -103,18 +106,16 @@ int DirectAddressSearch(const list<Node>& T, int k) {
 }
 
 void DirectAddressInsert(list<Node>& T, Node& x) {
-    auto it = find_if(T.begin(), T.end(), [&x](const Node& node) { return node.key == x.key; });
-    if (it == T.end()) {
-        T.push_back(x); 
-    }
-    else {
-        it->key = x.key;
-    }
+    T.push_front(x); 
 }
 
-void DirectAddressDelete(list<Node>& T, int key) {
-    auto initialSize = T.size();
-    T.remove_if([key](const Node& node) { return node.key == key; });
+void DirectAddressDelete(list<Node>& T, int key) { //Delete only once, the element which appears earliest
+    auto it = find_if(T.begin(), T.end(), [key](const Node& node) { return node.key == key; });
+    if (it != T.end()) {
+        T.erase(it); //delete first occurence
+    }
+    //T.remove_if([key](const Node& node) { return node.key == key; });
+    //Gets rid of all occurences
 }
 
 int main(int argc, char* argv[]) {
@@ -122,58 +123,73 @@ int main(int argc, char* argv[]) {
     cin >> m;
     //create hashtable
     //hash function h(k) = k mod m
-    list<Node> T;
-    for (int i = 0; i < m; i++) {
-
-    }
+    vector<list<Node>> table(m);
 
     string input;
-    while (cin >> input && input[0] != 'e') {    //e = exit, finish your program
+    cin >> input;
+    while (input[0] != 'e') {    //e = exit, finish your program
         char letter = input[0];
-        int key = stoi(input.substr(1));
+        int key = -1;
+        if (input.size() > 1) {
+            key = stoi(input.substr(1));
+        }
+        int index = hashFunction(key, m);
 
         if (letter == 'i') {     //insert key into the table, "i2" implies Insert key 2
             //For collisions, insert the colliding key at the beginning of the linked list. 
             //Insert the key and don't output anything. 
-            Node newNode{key, };
-            DirectAddressInsert(T, newNode);
+            Node x = {key};
+            DirectAddressInsert(table[index], x);
         }
         else if (letter == 'd') {    //delete key from the table. "d2" implies Delete key 2 from the table
             //If there are multiple elements of the same key value, delete the element of the key value that 
             //appears the earliest in the list. If the delete was successful, you have to output
-            DirectAddressDelete(T, key);
-            auto initialSize = T.size();
-            if (T.size() == initialSize) {
-                cout << key << " :DELETE_FAILED;" << endl;
+            size_t initialSize = table[index].size();
+            DirectAddressDelete(table[index], key);
+            if (table[index].size() == initialSize) {
+                cout << key << ":DELETE_FAILED;" << endl;
             }
             else {
-                cout << key << " :DELTEED;" << endl;
+                cout << key << ":DELETED;" << endl;
             }
         }
-        else if (letter = 's') { //Search (key) in the table. 
-            int index = DirectAddressSearch(T, key);
-            if (index != -1) {
-                cout << "(" << key << ") :FOUND_ATi, j;" << endl;
+        else if (letter == 's') { //Search (key) in the table.       
+            int position = DirectAddressSearch(table[index], key);
+            if (position != -1) {
+                cout << key << ":FOUND_AT" << index << "," << position << ";" << endl;
             }
             else {
-                cout << "(" << key << ") :NOT_FOUND;" << endl;
+                cout << key << ":NOT_FOUND;" << endl;
             }
         }
-        else if (letter = 'o') { //Output the entire hash table, 
+        else if (letter == 'o') { //Output the entire hash table, 
         //0:6->3->;
         //1:1->;
         //2:;
-        int bucketIndex = 0;
-        for (const auto& node : T) {
-            cout << bucketIndex << ": " << node.key << "->" << node.data << ";" << endl;
-            ++bucketIndex;
+        for (int i = 0; i < m; i++) {
+            cout << i << ":";
+            for (const auto& node : table[i]) {
+                cout << node.key << "->";
+            }
+            cout << ";" << endl;
         }
         }
+        cin >> input; 
     }
     return 0;
 }
 
-
+/*
+Errors: 
+1. terminating due to uncaught exception of type std::invalid_argument: stoi: no conversion zsh: abort
+    occurs when stoi is trying to convert a string that dose not contain a valid integer. 
+    stoi(input.substr(1)) - assumed to provide the substring up until the length (end)
+    Invalid for output 'o', switched from outside the if statements to inside 3/4 that contain them
+    Still doesn't work-
+    Solution: check length while maintaining position outside the if statements. Key is intialized to be outside the table
+2. Insert at the end instead of the beginning of the linkedList
+    push_front(value) instead of push_back(value)
+*/
 
 
 
